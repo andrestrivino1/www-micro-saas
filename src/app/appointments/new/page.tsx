@@ -1,8 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { useMemo, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Suspense, useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 import { api, ApiError } from '@/lib/api-client';
@@ -17,13 +17,28 @@ function defaultDateTime(): string {
   const d = new Date();
   d.setMinutes(0, 0, 0);
   d.setHours(d.getHours() + 2);
+  return formatLocal(d);
+}
+
+function formatLocal(d: Date): string {
   const pad = (n: number) => String(n).padStart(2, '0');
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
-export default function NewAppointmentPage() {
+function initialFromParams(date: string | null, hour: string | null): string {
+  if (!date) return defaultDateTime();
+  const [y, m, d] = date.split('-').map(Number);
+  if (!y || !m || !d) return defaultDateTime();
+  const hh = hour && /^\d{2}:\d{2}$/.test(hour) ? hour : '09:00';
+  return `${date}T${hh}`;
+}
+
+function NewAppointmentForm() {
   const router = useRouter();
   const queryClient = useQueryClient();
+  const searchParams = useSearchParams();
+  const dateParam = searchParams.get('date');
+  const hourParam = searchParams.get('hour');
 
   const { data: clients, isLoading: clientsLoading } = useQuery({
     queryKey: ['clients'],
@@ -31,7 +46,9 @@ export default function NewAppointmentPage() {
   });
 
   const [clientId, setClientId] = useState('');
-  const [scheduledAt, setScheduledAt] = useState(defaultDateTime());
+  const [scheduledAt, setScheduledAt] = useState(() =>
+    initialFromParams(dateParam, hourParam),
+  );
   const [service, setService] = useState<string>(SERVICES[0]);
 
   const selected = useMemo(
@@ -48,7 +65,7 @@ export default function NewAppointmentPage() {
     mutationFn: api.createAppointment,
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['appointments'] });
-      router.push('/dashboard');
+      router.push(dateParam ? '/calendar' : '/dashboard');
     },
   });
 
@@ -69,22 +86,30 @@ export default function NewAppointmentPage() {
     });
   }
 
+  const backHref = dateParam ? '/calendar' : '/dashboard';
+  const backLabel = dateParam ? 'Volver al calendario' : 'Volver a la agenda';
+
   return (
-    <AppShell>
+    <>
       <Link
-        href="/dashboard"
+        href={backHref}
         className="mb-4 inline-flex items-center gap-1.5 text-sm text-zinc-500 hover:text-zinc-900"
       >
         <ArrowLeft className="h-4 w-4" aria-hidden />
-        Volver a la agenda
+        {backLabel}
       </Link>
 
       <h1 className="text-2xl font-semibold tracking-tight">Nueva cita</h1>
       <p className="mt-1 text-sm text-zinc-500">
-        Selecciona un cliente, fecha y servicio.
+        {dateParam
+          ? 'Fecha precargada desde el calendario.'
+          : 'Selecciona un cliente, fecha y servicio.'}
       </p>
 
-      <form onSubmit={submit} className="mt-6 space-y-5 rounded-2xl border border-zinc-200 bg-white p-5">
+      <form
+        onSubmit={submit}
+        className="mt-6 space-y-5 rounded-2xl border border-zinc-200 bg-white p-5"
+      >
         <label className="block text-sm">
           <span className="text-zinc-700">Cliente</span>
           <select
@@ -155,7 +180,7 @@ export default function NewAppointmentPage() {
 
         <div className="flex items-center justify-end gap-2 pt-2">
           <Link
-            href="/dashboard"
+            href={backHref}
             className="rounded-full px-4 py-2 text-sm font-medium text-zinc-600 hover:bg-zinc-100"
           >
             Cancelar
@@ -172,6 +197,16 @@ export default function NewAppointmentPage() {
           </button>
         </div>
       </form>
+    </>
+  );
+}
+
+export default function NewAppointmentPage() {
+  return (
+    <AppShell>
+      <Suspense fallback={<p className="text-sm text-zinc-500">Cargando…</p>}>
+        <NewAppointmentForm />
+      </Suspense>
     </AppShell>
   );
 }

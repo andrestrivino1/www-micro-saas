@@ -7,6 +7,7 @@ import { clearSession } from '@/lib/auth';
 
 const navItems: { href: string; label: string }[] = [
   { href: '/dashboard', label: 'Agenda' },
+  { href: '/calendar', label: 'Calendario' },
   { href: '/clients', label: 'Clientes' },
 ];
 

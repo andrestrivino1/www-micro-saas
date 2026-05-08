@@ -84,8 +84,8 @@ export const api = {
       auth: false,
     }),
 
-  listAppointments: (date?: string) =>
-    request<Appointment[]>('/appointments', { query: { date } }),
+  listAppointments: (params?: { date?: string; from?: string; to?: string }) =>
+    request<Appointment[]>('/appointments', { query: params }),
 
   createAppointment: (input: AppointmentCreateInput) =>
     request<Appointment>('/appointments', { method: 'POST', body: input }),

@@ -6,19 +6,24 @@ import { useQuery } from '@tanstack/react-query';
 import { Calendar, Loader2, Plus, Users } from 'lucide-react';
 import { api } from '@/lib/api-client';
 import type { Appointment } from '@/lib/types';
-import { formatDate, todayIsoDate } from '@/lib/format';
+import { formatDate } from '@/lib/format';
 import { AppShell } from '@/components/AppShell';
 import { AppointmentCard } from '@/components/AppointmentCard';
 import { ReminderPreviewDialog } from '@/components/ReminderPreviewDialog';
 
 export default function DashboardPage() {
-  const today = todayIsoDate();
   const [reminderTarget, setReminderTarget] = useState<Appointment | null>(null);
 
+  // No pasamos `date`: el backend usa `new Date()` y computa la ventana en la
+  // zona horaria del servidor (que en local coincide con la del usuario).
   const { data, isLoading, error, refetch, isRefetching } = useQuery({
-    queryKey: ['appointments', today],
-    queryFn: () => api.listAppointments(today),
+    queryKey: ['appointments', 'today'],
+    queryFn: () => api.listAppointments(),
   });
+
+  // El calendario invalida con clave ['appointments', 'range', ...]; mantenemos
+  // ['appointments', 'today'] para esta vista, pero ambas viven bajo el prefijo
+  // común ['appointments'] así una mutación las invalida juntas.
 
   return (
     <AppShell>
