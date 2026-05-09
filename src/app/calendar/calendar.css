@@ -10,17 +10,49 @@
   margin-bottom: 1rem;
   flex-wrap: wrap;
   gap: 0.5rem;
+  justify-content: center;
 }
 
 .rbc-toolbar button {
   border-radius: 9999px;
-  padding: 0.4rem 0.9rem;
+  padding: 0.35rem 0.75rem;
   border: 1px solid rgb(228 228 231);
   background: white;
   color: rgb(63 63 70);
-  font-size: 0.8125rem;
+  font-size: 0.75rem;
   font-weight: 500;
   transition: background-color 0.15s, border-color 0.15s;
+}
+
+@media (min-width: 640px) {
+  .rbc-toolbar {
+    justify-content: space-between;
+  }
+
+  .rbc-toolbar button {
+    padding: 0.4rem 0.9rem;
+    font-size: 0.8125rem;
+  }
+}
+
+.rbc-header {
+  font-size: 0.65rem !important;
+}
+
+@media (min-width: 640px) {
+  .rbc-header {
+    font-size: 0.75rem !important;
+  }
+}
+
+.rbc-event {
+  font-size: 0.7rem !important;
+}
+
+@media (min-width: 640px) {
+  .rbc-event {
+    font-size: 0.75rem !important;
+  }
 }
 
 .rbc-toolbar button:hover,

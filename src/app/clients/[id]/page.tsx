@@ -52,17 +52,19 @@ export default function ClientDetailPage({ params }: PageProps) {
         Volver a clientes
       </Link>
 
-      <header className="rounded-2xl border border-zinc-200 bg-white p-6">
-        <div className="flex items-baseline justify-between gap-4">
+      <header className="rounded-2xl border border-zinc-200 bg-white p-5 sm:p-6">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-baseline sm:justify-between sm:gap-4">
           <div>
-            <h1 className="text-2xl font-semibold tracking-tight">{data.name}</h1>
+            <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">
+              {data.name}
+            </h1>
             <p className="mt-1 text-sm text-zinc-500">
               {data.pet.name} · {data.pet.breed ?? 'Sin raza'}
             </p>
           </div>
           <a
             href={`tel:${data.phone}`}
-            className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm text-zinc-700 ring-1 ring-zinc-200 hover:bg-zinc-50"
+            className="inline-flex w-fit items-center gap-1.5 rounded-full px-3 py-1.5 text-sm text-zinc-700 ring-1 ring-zinc-200 hover:bg-zinc-50"
           >
             <Phone className="h-3.5 w-3.5" aria-hidden />
             {data.phone}

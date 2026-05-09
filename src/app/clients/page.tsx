@@ -14,16 +14,18 @@ export default function ClientsListPage() {
 
   return (
     <AppShell>
-      <header className="mb-6 flex items-end justify-between gap-4">
+      <header className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between sm:gap-4">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Clientes</h1>
+          <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">
+            Clientes
+          </h1>
           <p className="mt-1 text-sm text-zinc-500">
             {data ? `${data.length} cliente${data.length === 1 ? '' : 's'}` : ' '}
           </p>
         </div>
         <Link
           href="/clients/new"
-          className="inline-flex h-10 items-center gap-1.5 rounded-full bg-zinc-900 px-4 text-sm font-medium text-white hover:bg-zinc-800"
+          className="inline-flex h-10 w-fit items-center gap-1.5 rounded-full bg-zinc-900 px-4 text-sm font-medium text-white hover:bg-zinc-800"
         >
           <UserPlus className="h-4 w-4" aria-hidden />
           Nuevo cliente

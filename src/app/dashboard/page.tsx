@@ -27,18 +27,18 @@ export default function DashboardPage() {
 
   return (
     <AppShell>
-      <header className="mb-6 flex items-end justify-between gap-4">
+      <header className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between sm:gap-4">
         <div>
-          <p className="text-sm font-medium text-zinc-500">
+          <p className="text-xs font-medium text-zinc-500 sm:text-sm">
             {formatDate(new Date().toISOString())}
           </p>
-          <h1 className="mt-1 text-2xl font-semibold tracking-tight">
+          <h1 className="mt-1 text-xl font-semibold tracking-tight sm:text-2xl">
             Agenda de hoy
           </h1>
         </div>
         <Link
           href="/appointments/new"
-          className="inline-flex h-10 items-center gap-1.5 rounded-full bg-zinc-900 px-4 text-sm font-medium text-white shadow-sm hover:bg-zinc-800"
+          className="inline-flex h-10 w-fit items-center gap-1.5 rounded-full bg-zinc-900 px-4 text-sm font-medium text-white shadow-sm hover:bg-zinc-800"
         >
           <Plus className="h-4 w-4" aria-hidden />
           Nueva cita
