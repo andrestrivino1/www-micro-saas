@@ -58,6 +58,7 @@ function NewAppointmentForm() {
 
   const isPast = useMemo(() => {
     if (!scheduledAt) return false;
+    // eslint-disable-next-line react-hooks/purity
     return new Date(scheduledAt).getTime() < Date.now();
   }, [scheduledAt]);
 

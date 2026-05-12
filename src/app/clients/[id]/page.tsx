@@ -1,13 +1,23 @@
 'use client';
 
 import Link from 'next/link';
-import { use } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { ArrowLeft, Calendar, Loader2, Phone } from 'lucide-react';
-import { api } from '@/lib/api-client';
+import { use, useState } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useRouter } from 'next/navigation';
+import {
+  ArrowLeft,
+  Calendar,
+  Loader2,
+  Pencil,
+  Phone,
+  Trash2,
+} from 'lucide-react';
+import { api, ApiError } from '@/lib/api-client';
 import { formatDateShort, formatTime } from '@/lib/format';
 import { AppShell } from '@/components/AppShell';
 import { ReminderStatusPill } from '@/components/StatusPill';
+import { ClientEditDialog } from '@/components/ClientEditDialog';
+import { ConfirmDialog } from '@/components/ConfirmDialog';
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -15,10 +25,23 @@ interface PageProps {
 
 export default function ClientDetailPage({ params }: PageProps) {
   const { id } = use(params);
+  const router = useRouter();
+  const queryClient = useQueryClient();
+  const [editing, setEditing] = useState(false);
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
 
   const { data, isLoading, error } = useQuery({
     queryKey: ['clients', id],
     queryFn: () => api.getClient(id),
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: () => api.deleteClient(id),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['clients'] });
+      void queryClient.invalidateQueries({ queryKey: ['appointments'] });
+      router.push('/clients');
+    },
   });
 
   if (isLoading) {
@@ -41,6 +64,10 @@ export default function ClientDetailPage({ params }: PageProps) {
       </AppShell>
     );
   }
+
+  const futureCount = data.appointments.filter(
+    (a) => new Date(a.scheduledAt) >= new Date(),
+  ).length;
 
   return (
     <AppShell>
@@ -76,6 +103,25 @@ export default function ClientDetailPage({ params }: PageProps) {
             {data.pet.notes}
           </p>
         )}
+
+        <div className="mt-4 flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setEditing(true)}
+            className="inline-flex items-center gap-1.5 rounded-full bg-zinc-900 px-3 py-1.5 text-xs font-medium text-white hover:bg-zinc-800"
+          >
+            <Pencil className="h-3.5 w-3.5" aria-hidden />
+            Editar
+          </button>
+          <button
+            type="button"
+            onClick={() => setConfirmingDelete(true)}
+            className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium text-red-600 ring-1 ring-red-200 hover:bg-red-50"
+          >
+            <Trash2 className="h-3.5 w-3.5" aria-hidden />
+            Eliminar
+          </button>
+        </div>
       </header>
 
       <section className="mt-8">
@@ -106,6 +152,44 @@ export default function ClientDetailPage({ params }: PageProps) {
           </ul>
         )}
       </section>
+
+      <ClientEditDialog
+        client={editing ? data : null}
+        onClose={() => setEditing(false)}
+      />
+
+      <ConfirmDialog
+        open={confirmingDelete}
+        title="Eliminar cliente"
+        destructive
+        loading={deleteMutation.isPending}
+        confirmLabel="Sí, eliminar"
+        message={
+          <div className="space-y-2">
+            <p>
+              Vas a eliminar a <strong>{data.name}</strong> y su mascota{' '}
+              <strong>{data.pet.name}</strong>.
+            </p>
+            {futureCount > 0 && (
+              <p className="text-amber-700">
+                También se eliminarán {futureCount} cita
+                {futureCount === 1 ? '' : 's'} futura
+                {futureCount === 1 ? '' : 's'} y todo el historial de
+                recordatorios. Esta acción no se puede deshacer.
+              </p>
+            )}
+            {deleteMutation.isError && (
+              <p className="text-red-600">
+                {deleteMutation.error instanceof ApiError
+                  ? deleteMutation.error.message
+                  : 'No se pudo eliminar.'}
+              </p>
+            )}
+          </div>
+        }
+        onCancel={() => setConfirmingDelete(false)}
+        onConfirm={() => deleteMutation.mutate()}
+      />
     </AppShell>
   );
 }

@@ -12,6 +12,7 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
     if (!loadSession()) {
       router.replace('/');
     } else {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setReady(true);
     }
   }, [router]);
